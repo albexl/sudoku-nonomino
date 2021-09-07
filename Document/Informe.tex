@@ -1,0 +1,135 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%							Sudoku Solver Haskell             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt]{article}
+
+\usepackage[latin1]{inputenc}
+
+\usepackage[spanish]{babel}
+
+% Paquetes de la AMS:
+\usepackage[total={6in,9.8in},top=0.50in, left=1in, right=1in]{geometry}
+\usepackage{amsmath, amsthm, amsfonts}
+\usepackage{graphics}
+\usepackage{float}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{latexsym}
+\usepackage{newlfont}
+\usepackage{epstopdf}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage[colorlinks]{hyperref}
+\usepackage[x11names,table]{xcolor}
+\usepackage{graphics}
+\usepackage{wrapfig}
+\usepackage[rflt]{floatflt}
+\usepackage{multicol}
+\usepackage{listings} \lstset {language = haskell, basicstyle=\bfseries\ttfamily, keywordstyle = \color{blue}, commentstyle = \bf\color{brown}}
+
+
+\renewcommand{\labelenumi}{$\bullet$}
+
+\title{\bf\huge Programaci\'on Declarativa \\Sudoku Nonomino}
+\author{\Large Alberto Gonz\'alez Rosales\\
+	\large {Grupo C-411}
+	}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problema}
+El objetivo de este trabajo es resolver un \emph{sudoku nonomin\'o} utilizando el lenguaje de programaci\'on \emph{Haskell}. Un \emph{sudoku nonomin\'o} es una versi\'on m\'as general del \emph{sudoku cl\'asico}. En este tipo de \emph{sudokus} las reglas son las mismas que en el \emph{sudoku cl\'asico} : se debe rellenar el tablero con n\'umeros entre $1$ y $9$, no debe existir ning\'un n\'umero repetido en ninguna fila ni columna y tampoco en ninguna de las $9$ regiones definidas en el tablero. La diferencia radica en que las regiones de un \emph{sudoku cl\'asico} son cuadrados de $3*3$, mientras que las regiones del \emph{sudoku nonomin\'o} son regiones conexas de $9$ cuadrados de $1*1$.
+
+Nuestro problema espec\'ifico parte del hecho de que se nos da como entrada un conjunto de $9$ \emph{nonomin\'os} y tenemos primeramente que verificar que exista una forma de ubicar las piezas \emph{nonomin\'os} sobre el tablero del \emph{sudoku}(un cuadrado de dimensiones $9*9$). Una vez determinada una posible ubicaci\'on de las piezas sobre el tablero procedemos entonces a resolver el \emph{sudoku nonomin\'o} resultante.
+
+\section{Definiciones e implementaci\'on }
+La forma de representar los \emph{nonomin\'os} que se consider\'o m\'as conveniente fue mediante una clase que tuviese dos campos : un identificador num\'erico y una lista de tuplas de la forma $((x, y), val)$, o sea, una posici\'on y un valor asociado a esa posici\'on. El valor $0$ significa que en esa posici\'on a\'un no hay ning\'un n\'umero asignado. El identificador num\'erico sirve para asociar un \'indice a un \emph{nonomin\'o} para que sea m\'as f\'acil identificarlo, lo cual es \'util a la hora de mostrarlos por consola. Los valores $(x, y)$ son las posiciones relativas del \emph{nonomin\'o} asumiendo que el cuadrado m\'as arriba y m\'as a la izquierda es el $(0, 0)$.
+
+La forma de representar un \emph{sudoku} es una lista de tuplas de la forma $((x, y), val)$ donde $(x, y)$ es una posici\'on en la matriz de $9*9$ y $val$ es el valor asociado a esa posici\'on.
+
+La forma de resolver el problema planteado consiste en dada una lista de \emph{nonomin\'os} pasarla como par\'ametro a un m\'etodo que es el encargado de comprobar si existe una distribuci\'on v\'alida de estos y, en caso de encontrarla, pasa esta distribuci\'on a otro m\'etodo que se encarga de resolver el \emph{sudoku}.
+
+
+\section{Ideas principales para resolver el problema}
+El proceso de soluci\'on del \emph{sudoku nonomin\'o} consiste en dos pasos:
+
+\subsection{Ordenar los \emph{nonomin\'os}}
+Primeramente hay que comprobar que exista una forma de ubicar los \emph{nonomin\'os} de forma tal que cubran todo el tablero y no exista en esa distribuci\'on ning\'un n\'umero repetido en ninguna fila o columna. Estamos asumiendo que en un mismo \emph{nonomin\'o} no existen n\'umeros repetidos.
+
+Para esto vamos a seguir el criterio de que dado un orden de los \emph{nonomin\'os}, el primero en la lista debe ser el que cubra la posici\'on $(0, 0)$ en la matriz. El siguiente en la lista debe cubrir la posici\'on m\'as arriba y m\'as a la izquierda que a\'un no est\'e cubierta y as\'i sucesivamente. Sabremos si el orden que estamos comprobando es v\'alido si cuando est\'en ubicados todos los \emph{nonomin\'os} no qued\'o ninguna posici\'on vac\'ia.
+
+La idea es comprobar si se puede ubicar alguna de las permutaciones de la lista de \emph{nonomin\'os}, si es posible ubicar los \emph{nonomin\'os} en este orden entonces se pasa a resolver el \emph{sudoku} que qued\'o conformado. En caso de que no exista ninguna distribuci\'on v\'alida para conformar un \emph{sudoku} determinamos que no hay soluci\'on. 
+
+\subsection{Resolver el \emph{sudoku}}
+Para resolver el \emph{sudoku} utilizaremos un m\'etodo recursivo que va a comprobar si existe soluci\'on de \emph{nonomin\'o} en \emph{nonomin\'o}. El m\'etodo recibe, a grandes rasgos, el \emph{nonomin\'o} actual, la posici\'on actual dentro de este \emph{nonomin\'o}, el n\'umero que se quiere poner en esta posici\'on y todas las posiciones donde se ha puesto alg\'un n\'umero.
+
+Los casos base son: si revisamos todos los \emph{nonomin\'os} entonces pudimos resolverlo, si el n\'umero que queremos probar en esta posici\'on es mayor o igual a $10$ entonces no hay soluci\'on. De lo contrario comprobamos si el n\'umero que queremos ubicar en la posici\'on actual no genere contradicciones en su fila, columna y \emph{nonomin\'o}. Si no hay contradicci\'on lo ubicamos y resolvemos recursivamente el \emph{sudoku} en la siguiente posici\'on del \emph{nonomin\'o}; si hay contradicci\'on entonces se prueba con el n\'umero actual incrementado en uno.
+
+
+\section{Funci\'on Main}
+La funci\'on que da inicio al programa lee un fichero $"input.in"$ que contiene una lista de \emph{nonomin\'os} en el formato explicado anteriormente. Esta lista de $"Strings"$ la convierte a \emph{nonomin\'os} y la pasa como par\'ametro al m\'etodo principal llamado $"solution"$. Este m\'etodo devuelve una tupla donde el primer elemento es la distribuci\'on de los \emph{nonomin\'os} en el tablero y el segundo es la soluci\'on del \emph{sudoku}. En caso de no existir soluci\'on devuelve dos listas vac\'ias. Posteriormente se muestran en la consola los resultados obtenidos en forma de matrices de $9 * 9$.
+
+Para ejecutar el programa basta con configurar en el archivo $"input.in"$ adjunto, la lista de \emph{nonomin\'os} siguiendo el formato especificado anteriormente y luego ejecutar el comando $"main"$ en la consola una vez cargado el m\'odulo $"nonominos.hs"$.
+
+\subsection{C\'odigo para iniciar el programa}
+\begin{lstlisting}
+Prelude> :l nonominos.hs
+[1 of 1] Compiling Main             ( nonominos.hs, interpreted )
+Ok, one module loaded.
+*Main> main
+
+\end{lstlisting}
+
+\subsection{C\'odigo de la funci\'on Main}
+
+\begin{lstlisting}
+main = do
+    inp <- readFile "input.in"              
+    let x = map readNonomino (lines inp)   
+
+    let sol = solution x                    
+
+    let setting = fst sol                   
+    let filled = snd sol                    
+
+    print "sudoku distribution:"                        
+    printList (convertToIds (setting) )   
+    
+    print "solution:"
+    printList (convertToVals (filled) )    
+
+
+\end{lstlisting}
+
+\subsection{Salida ejemplo}
+\begin{lstlisting}
+
+"sudoku distribution:"
+[1,1,1,1,1,2,2,2,2]
+[3,1,1,1,2,2,2,2,2]
+[3,3,1,3,4,4,4,4,4]
+[3,3,3,3,6,7,7,4,4]
+[5,5,3,6,6,7,7,4,4]
+[5,5,6,6,7,7,7,9,9]
+[5,5,6,8,8,8,7,9,9]
+[5,5,6,8,8,8,7,9,9]
+[5,6,6,8,8,8,9,9,9]
+"solution:"
+[9,5,7,1,8,2,6,3,4]
+[6,2,3,4,1,8,7,9,5]
+[7,1,6,2,5,3,4,8,9]
+[8,3,5,9,7,4,1,2,6]
+[2,9,4,5,3,6,8,1,7]
+[1,8,2,6,9,7,5,4,3]
+[3,7,9,8,4,5,2,6,1]
+[4,6,1,7,2,9,3,5,8]
+[5,4,8,3,6,1,9,7,2]
+\end{lstlisting}
+
+\end{document}
