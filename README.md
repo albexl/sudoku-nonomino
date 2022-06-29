@@ -1,2 +1,2 @@
 # sudoku-nonomino
-School Declarative Programming Project in Haskell
+Declarative Programming Project in `Haskell`. School project to evaluate skills in the `Haskell` programming language, solving a particular type of `Sudoku`.
